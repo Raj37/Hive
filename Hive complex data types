@@ -1,0 +1,102 @@
+Use Case 1: hive complex data type- ARRAY<DATA_TYPE>
+
+sample data set:=
+name  sal age
+raj	4000	25,21,30
+kamal	5000	26,33,22
+piyush	9000	22,21,24
+
+create table hive_array_table(name string, sal int, age array<int>)row format delimited fields terminated by '\t' collection items terminated by ',' stored as textfile;
+
+load data local inpath '/home/cloudera/Desktop/hive_examples/info.txt' into table hive_array_table;
+
+hive> select name,age[0] from hive_array_table;
+OK
+raj	25
+kamal	26
+piyush	22
+
+
+Use Case 2: Using explode clause with ARRAY<DATA_TYPE> in hive
+
+Before applying explode on age column of array type in hive
+
+hive> select * from hive_array_table;
+OK
+raj	4000	[25,21,30]
+kamal	5000	[26,33,22]
+piyush	9000	[22,21,24]
+
+Afetr applying:=
+
+select name, a from hive_array_table lateral view explode(age) q as a;
+
+hive> select name, a from hive_array_table lateral view explode(age) q as a;
+OK
+raj	25
+raj	21
+raj	30
+kamal	26
+kamal	33
+kamal	22
+piyush	22
+piyush	21
+piyush	24
+
+Use Case 3: hive complex data type- MAP<INT,INT>
+Sample date set:=
+SecondarySchool	Assam	Male	2015:56344,2016:57573,2017:58389
+SecondarySchool	Assam	Femal	2015:19747,2016:20284,2017:37727
+SecondarySchool	Bihar	Male	2015:36452,2016:43947,2017:47727
+SecondarySchool	Bihar	Femal	2015:6697,2016:13483,2017:27727
+hive> describe myschools;
+OK
+schooltype          	string              	                    
+state               	string              	                    
+gender              	string              	                    
+total               	map<int,int> 
+
+create table MySchools(schooltype string,state string,gender string, total map<int,int>) row format delimited fields terminated by '\t' collection items terminated by ',' map keys terminated by ':';
+load data local inpath '/home/cloudera/Desktop/hive_examples/school_data.txt' into table MySchools;
+
+hive> select * from myschools;
+OK
+SecondarySchool	Assam	Male	{2015:56344,2016:57573,2017:58389}
+SecondarySchool	Assam	Femal	{2015:19747,2016:20284,2017:37727}
+SecondarySchool	Bihar	Male	{2015:36452,2016:43947,2017:47727}
+SecondarySchool	Bihar	Femal	{2015:6697,2016:13483,2017:27727}
+
+hive>select total[2016] from myschools where state='Assam';
+OK
+57573
+20284
+Time taken: 0.158 seconds, Fetched: 2 row(s)
+
+Use case 4: ive complex data type- STRUCT<DATA_TYPE1,DATA_TYPE2..>
+
+Data set:=
+Yamaha Ray-Z	Aircooled,149.0,14.0,0
+Hero Maestro	Aircooled,155.0,14.8,0
+Tvs Vego	Aircooled,159.0,15.4,0
+Hondo Dio	Fule-injection,223.0,20.25,0
+
+hive> select * from mybikes;
+OK
+Yamaha Ray-Z	{"enginetype":"Aircooled","cc":149.0,"power":14.0,"gears":0}
+Hero Maestro	{"enginetype":"Aircooled","cc":155.0,"power":14.8,"gears":0}
+Tvs Vego	{"enginetype":"Aircooled","cc":159.0,"power":15.4,"gears":0}
+Hondo Dio	{"enginetype":"Fule-injection","cc":223.0,"power":20.25,"gears":0}
+
+ve> describe mybikes;
+OK
+name                	string              	                    
+bikefeatures        	struct<EngineType:string,cc:float,power:float,gears:int>
+
+create table MyBikes(name string, BikeFeatures struct<EngineType:string,cc:float,power:float,gears:int>) row format delimited fields terminated by ‘\t’ collection items terminated by ‘,’;
+
+load data local inpath '/home/cloudera/Desktop/hive_examples/Bikes.txt' into table MyBikes;
+
+hive> select name,bikefeatures.cc from mybikes where name ='Hondo Dio';
+OK
+Hondo Dio	223.0
+
