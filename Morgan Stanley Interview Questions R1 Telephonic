@@ -24,3 +24,27 @@ up	store1	5000
 up	store2	2000
 up	store4	3333
 
+create table store(id int,store string,sell int,state string)row format delimited fields terminated by ',' lines terminated by '\n';
+load data local inpath '/home/cloudera/Desktop/store.txt' overwrite into table store;
+
+select * from store
+1001	store1	5000	up
+1002	store2	2000	up
+1004	store3	6000	up
+1005	store4	3333	up
+1008	store9	4444	mp
+1009	store7	5000	mp
+1010	store11	1000	mp
+1007	store8	6000	mp
+1012	store9	5464	uk
+1020	store7	4444	uk
+1044	store11	3333	uk
+1017	store8	1111	uk
+
+create table dyn_store1(id int,store string,sell int)partitioned by (state string) row format delimited fields terminated by ',' lines terminated by '\n';
+set hive.exec.dynamic.partition.mode=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+Query1:insert overwrite table dyn_store1 partition(state='up') select id,store,sell,state from store;
+FAILED: SemanticException [Error 10044]: Line 1:23 Cannot insert into target table because column number/types are different ''up'': Table insclause-0 has 3 columns, but query has 4 columns.
+Query2:insert overwrite table dyn_store1 partition(up) select id,store,sell,state from store;
+FAILED: SemanticException Partition spec {up=null} contains non-partition columns
