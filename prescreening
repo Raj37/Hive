@@ -1,0 +1,27 @@
+step 1: hive>create table new_users(Transaction_date string,Product string,Price int,Payment_Type string,Name string,City string,State string,Country string,Account_Created string,Last_Login string,Latitude string,Longitude string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+
+step 2: hive>load data local inpath '/home/cloudera/Desktop/new_file.txt' overwrite into table new_users;
+
+
+Problem Statement 1- Number of users per country per state.
+Query 1- hive>select country,state,count(name) from new_users group by country,state;
+
+Problem Statement 2- Total revenue per City.
+Query2- hive>select city,sum(price) from new_users group by city;
+
+
+Problem Statement 3- Total revenue per day per product.
+Query3- hive>select PD,Product,SUM(Price) from (select from_unixtime(unix_timestamp(Transaction_date,'MM/dd/yyyy'),'yyyy-MM-dd') as PD,Product,Price from new_users)v group by PD,Product;
+
+Problem Statement 4- Number of transactions per name.
+Query4- hive>select count(Transaction_date),UN from (select Transaction_date,UPPER(name) as UN from new_users)v group by UN order by UN DESC;
+
+Problem Statement 5- Revenue per day of Product 1 from United States.
+Query5- hive>select PD,Product,SUM(Price),Country from (select from_unixtime(unix_timestamp(Transaction_date,'MM/dd/yyyy'),'yyyy-MM-dd') as PD,Product,Price,Country from new_users where Product like 'Product1' and Country like 'United States')v group by PD,Product,Country;
+
+Problem Statement 6- Revenue per day per Payment Type.
+Query 6- hive>create table new_user1(Transaction_date date,Product string,Price int,Payment_Type string,Name string,City string,State string,Country string,Account_Created date,Last_Login date,Latitude string,Longitude string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+
+hive>insert into new_user1 select from_unixtime(unix_timestamp(Transaction_date,'MM/dd/yyyy'),'yyyy-MM-dd'),Product,Price,Payment_Type,Name,City,State,Country,Account_Created,Last_Login,Latitude,Longitude from new_users;
+
+hive>select Transaction_date,Payment_Type,sum(Price) from new_user1 group by Transaction_date,Payment_Type order by Transaction_date,Payment_Type;
