@@ -19,9 +19,11 @@ Query4- hive>select count(Transaction_date),UN from (select Transaction_date,UPP
 Problem Statement 5- Revenue per day of Product 1 from United States.
 Query5- hive>select PD,Product,SUM(Price),Country from (select from_unixtime(unix_timestamp(Transaction_date,'MM/dd/yyyy'),'yyyy-MM-dd') as PD,Product,Price,Country from new_users where Product like 'Product1' and Country like 'United States')v group by PD,Product,Country;
 
-Problem Statement 6- Revenue per day per Payment Type.
+Problem Statement 6- Revenue per day per Payment Type.(It shows demanding payment gateway for daily transactions)
 Query 6- hive>create table new_user1(Transaction_date date,Product string,Price int,Payment_Type string,Name string,City string,State string,Country string,Account_Created date,Last_Login date,Latitude string,Longitude string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
 
 hive>insert into new_user1 select from_unixtime(unix_timestamp(Transaction_date,'MM/dd/yyyy'),'yyyy-MM-dd'),Product,Price,Payment_Type,Name,City,State,Country,Account_Created,Last_Login,Latitude,Longitude from new_users;
 
 hive>select Transaction_date,Payment_Type,sum(Price) from new_user1 group by Transaction_date,Payment_Type order by Transaction_date,Payment_Type;
+OR
+hive> select Transaction_date,Payment_Type,sum(Price),rank() over(partition by Transaction_date order by SUM(Price)) as rank from new_user1 group by Transaction_date,Payment_Type order by Transaction_date ASC,rank DESC;
