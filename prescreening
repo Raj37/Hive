@@ -1,6 +1,10 @@
-step 1: hive>create table new_users(Transaction_date string,Product string,Price int,Payment_Type string,Name string,City string,State string,Country string,Account_Created string,Last_Login string,Latitude string,Longitude string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+step 1:Preprocessing data as Price column containing string entry i.e. "13,000" using unix sed command
 
-step 2: hive>load data local inpath '/home/cloudera/Desktop/new_file.txt' overwrite into table new_users;
+sed 's/"13,000"/13000/g' prescreening.csv>new_file.txt
+
+step 2: hive>create table new_users(Transaction_date string,Product string,Price int,Payment_Type string,Name string,City string,State string,Country string,Account_Created string,Last_Login string,Latitude string,Longitude string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+
+step 3: hive>load data local inpath '/home/cloudera/Desktop/new_file.txt' overwrite into table new_users;
 
 
 Problem Statement 1- Number of users per country per state.
