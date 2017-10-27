@@ -1,0 +1,18 @@
+hive> create table case_example(id int)row format delimited lines terminated by '\n';
+
+hive> select * from case_example;
+OK
+1
+2
+3
+4
+5
+6
+
+hive> select *, case when id %2=0 then 1 else 0 end as even,case when id %2 <>0 then 1 else 0 end as odd from case_example;
+1	0	1
+2	1	0
+3	0	1
+4	1	0
+5	0	1
+6	1	0
