@@ -1,0 +1,61 @@
+
+hive> select * from f1;
+OK
+1	a	b	a1	29
+2	c	d	b1	29
+3	e	f	c1	29
+4	g	h	d1	29
+5	i	j	e1	29
+
+create table f2(pk1 int, pk2 string, col2 string, col3 string, date int)row format delimited fields terminated by ',' lines terminated by '\n';
+
+insert into f2 values (1,'a','b1','a1',30),(6,'k','l','f1',30),(3,'e','f','c1',30),(4,'g','h','d1',30),(5,'i','j','e1',30);
+
+hive> select * from f2;
+OK
+1	a	b1	a1	30
+6	k	l	f1	30
+3	e	f	c1	30
+4	g	h	d1	30
+5	i	j	e1	30
+
+select f1.*,f2.* from f1 full outer join f2 on f1.pk1 =f2.pk1;
+
+select * from f1 union all select * from f2;
+
+create table temp as select * from f1 union all select * from f2;
+
+//insert into temp select * from f1 union all select * from f2;
+
+hive> select * from temp;
+OK
+1	a	b1	a1	30
+6	k	l	f1	30
+3	e	f	c1	30
+4	g	h	d1	30
+5	i	j	e1	30
+1	a	b	a1	29
+2	c	d	b1	29
+3	e	f	c1	29
+4	g	h	d1	29
+5	i	j	e1	29
+
+select t1.pk1,t1.pk2,t1.col2,t1.col3,t1.date from temp t1 where not exists (select 1 from temp t2 where t2.pk1 <> t1.pk1 AND t2.pk2 = t1.pk2 AND t2.col2 = t1.col2 AND t2.col3 = t1.col3);
+
+select f1.pk1,f1.pk2,f1.col2,f1.col3,f1.date from f1 left outer join f2 on f1.pk1=f2.pk1 AND f1.pk2=f2.pk2 AND f1.col2 = f2.col2 AND f1.col3 = f2.col3;
+
+NITESH:
+
+select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.pk1 IS NULL;(newly added records)
+
+select f1.pk1,f1.pk2,f1.col2,f1.col3,f1.date from f1 left outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f2.pk1 IS NULL; (records not present in tab2)
+
+select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.col2 != f2.col2 OR f1.col3 != f2.col3; (updated records)
+
+
+select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.pk1 IS NULL UNION ALL select f1.pk1,f1.pk2,f1.col2,f1.col3,f1.date from f1 left outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f2.pk1 IS NULL UNION ALL select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.col2 != f2.col2 OR f1.col3 != f2.col3;
+
+
+create table temp1 as select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.pk1 IS NULL UNION ALL select f1.pk1,f1.pk2,f1.col2,f1.col3,f1.date from f1 left outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f2.pk1 IS NULL UNION ALL select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.col2 != f2.col2 OR f1.col3 != f2.col3;
+
+create table final as select * from f1 UNION ALL select * from temp1;
