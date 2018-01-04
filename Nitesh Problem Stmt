@@ -59,3 +59,12 @@ select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.p
 create table temp1 as select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.pk1 IS NULL UNION ALL select f1.pk1,f1.pk2,f1.col2,f1.col3,f1.date from f1 left outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f2.pk1 IS NULL UNION ALL select f2.pk1,f2.pk2,f2.col2,f2.col3,f2.date from f1 right outer join f2 on f1.pk1 = f2.pk1 AND f1.pk2 = f2.pk2 where f1.col2 != f2.col2 OR f1.col3 != f2.col3;
 
 create table final as select * from f1 UNION ALL select * from temp1;
+
+select f4.pk1,f4.pk2,f4.col2,f4.col3,f4.flag,f4.date from f3 right outer join f4 on f3.pk1 = f4.pk1 AND f3.pk2 = f4.pk2 where f3.pk1 IS NULL;
+6	k	l	f1	1	30
+
+select t.pk1,t.pk2,t.col2,t.col3,case when t.flag = 1 then 0 end,case when t.date = 29 then 30 end from (select f3.pk1,f3.pk2,f3.col2,f3.col3,f3.flag,f3.date from f3 left outer join f4 on f3.pk1 = f4.pk1 AND f3.pk2 = f4.pk2 where f4.pk1 IS NULL)t;
+2	c	d	b1	0	30
+
+select f4.pk1,f4.pk2,f4.col2,f4.col3,f4.flag,f4.date from f3 right outer join f4 on f3.pk1 = f4.pk1 AND f3.pk2 = f4.pk2 where f3.col2 != f4.col2 OR f3.col3 != f4.col3;
+1	a	b1	a1	1	30
